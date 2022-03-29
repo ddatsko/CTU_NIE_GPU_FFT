@@ -20,12 +20,15 @@ int main(int argc, char* argv[]) {
     }
 
     auto points_dft = points;
-    auto &points_fft = points;
+    auto points_fft = points;
+    auto points_fft_iter = points;
+    fft_iter(points_fft_iter);
     dft(points_dft);
     fft(points_fft);
 
+
    for (size_t i = 0; i < points.size(); i++) {
-       std::cout << points_fft[i] << " " << points_dft[i] << std::endl;
+       std::cout << points_fft[i] << " " << points_dft[i] << " " << points_fft_iter[i] << std::endl;
    }
 
 

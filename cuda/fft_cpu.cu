@@ -1,5 +1,4 @@
-#include "fft.h"
-#include "utils.hpp"
+#include "fft_cpu.h"
 #include <iostream>
 
 using cf = std::complex<float>;
@@ -42,20 +41,6 @@ void fft(vcf &x) {
 }
 
 
-uint32_t reverseBits(uint32_t i) {
-    uint32_t mask = 0x55555555; // 0101...
-    i = ((i & mask) << 1) | ((i >> 1) & mask);
-    mask = 0x33333333; // 0011...
-    i = ((i & mask) << 2) | ((i >> 2) & mask);
-    mask = 0x0f0f0f0f; // 00001111...
-    i = ((i & mask) << 4) | ((i >> 4) & mask);
-    mask = 0x00ff00ff; // 0000000011111111...
-    i = ((i & mask) << 8) | ((i >> 8) & mask);
-    // 00000000000000001111111111111111 no need for mask
-    i = (i << 16) | (i >> 16);
-    return i;
-}
-
 void fft_iter(vcf &a) {
     int n = a.size();
 
@@ -65,8 +50,10 @@ void fft_iter(vcf &a) {
             j ^= bit;
         j ^= bit;
 
-        if (i < j)
+        if (i < j) {
+//            std::cout << "Swapping " << i << " and " << j << std::endl;
             swap(a[i], a[j]);
+        }
     }
 
     for (int len = 2; len <= n; len <<= 1) {
@@ -76,6 +63,10 @@ void fft_iter(vcf &a) {
             cf w(1);
             for (int j = 0; j < len / 2; j++) {
                 cf u = a[i+j], v = a[i+j+len/2] * w;
+
+//                std::cout << "Len = " << len << "Operation on " << i + j << " and " << i + j + len/2 << " with w = " << w <<
+//                          "u = " << u << " v = " << v <<  std::endl;
+
                 a[i+j] = u + v;
                 a[i+j+len/2] = u - v;
                 w *= wlen;

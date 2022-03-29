@@ -1,6 +1,9 @@
 #include <iostream>
 #include "utils.hpp"
 #include "fstream"
+#include <atomic>
+#include <chrono>
+
 
 std::vector<float> read_sequence_from_file(const std::string &filename) {
     std::ifstream is{filename};
@@ -26,11 +29,17 @@ std::vector<std::complex<float>> points_to_complex(const std::vector<float> &poi
     return res;
 }
 
-int get_power_of_2(size_t n) {
-    int res = 0;
-    while (n != 0) {
-        n >>= 1;
-        res++;
-    }
-    return res;
+time_point_t get_time() {
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    auto resTime = std::chrono::high_resolution_clock::now();
+    std::atomic_thread_fence(std::memory_order_seq_cst);
+    return resTime;
+}
+
+long long time_elapsed(time_point_t start_time) {
+    auto finish_time = get_time();
+
+    auto int_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish_time - start_time);
+    std::chrono::duration<long long, std::nano> long_sec = int_ns;
+    return long_sec.count();
 }
