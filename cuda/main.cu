@@ -36,11 +36,11 @@ int main(int argc, char* argv[]) {
         std::cout << "Iterative CPU time: " << time_elapsed(start_time_iter) << std::endl;
     }
 
-    {
-        auto start_time_dft = get_time();
-        dft(points_dft);
-        std::cout << "Direct transform CPU time: " << time_elapsed(start_time_dft) << std::endl;
-    }
+//    {
+//        auto start_time_dft = get_time();
+//        dft(points_dft);
+//        std::cout << "Direct transform CPU time: " << time_elapsed(start_time_dft) << std::endl;
+//    }
 
     {
         auto start_time_recursive = get_time();
@@ -57,10 +57,10 @@ int main(int argc, char* argv[]) {
 
 
    for (size_t i = 0; i < points.size(); i++) {
-       if (std::abs(points_dft[i].real() - cuda_fft_iter[i].x) > MAX_ABS_ERROR ||
-          std::abs(points_dft[i].imag() - cuda_fft_iter[i].y) > MAX_ABS_ERROR) {
-           std::cerr << "Results does not match at index " << i << ": " << std::endl;
-           std::cerr << "DFT: " << points_dft[i] << "; CUDA: " << cuda_fft_iter[i].x << ", " << cuda_fft_iter[i].y << std::endl;
+       if (std::abs(points_fft_iter[i].real() - cuda_fft_iter[i].x) > MAX_ABS_ERROR ||
+          std::abs(points_fft_iter[i].imag() - cuda_fft_iter[i].y) > MAX_ABS_ERROR) {
+           std::cerr << "Results do not match at index " << i << ": " << std::endl;
+           std::cerr << "FFT CPU: " << points_fft_iter[i] << "; CUDA: " << cuda_fft_iter[i].x << ", " << cuda_fft_iter[i].y << std::endl;
            return -1;
        }
    }
