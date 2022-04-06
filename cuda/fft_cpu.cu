@@ -73,4 +73,7 @@ void fft_iter(vcf &a) {
             }
         }
     }
+    for (auto &x: a) {
+        x = {x.real(), -x.imag()};
+    }
 }

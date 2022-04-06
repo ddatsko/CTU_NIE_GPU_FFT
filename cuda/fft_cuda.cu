@@ -63,8 +63,6 @@ __global__ void fft_kernel(cf *a, int N) {
 
             cf u = shm[tid], v = cuCmulf(shm[tid_comb], w);
 
-//            printf("Cuda len = %d, Combination on %d and %d with w = %f,%f u=%f,%f, v=%f,%f\n", len, tid, tid_comb, w.x, w.y, u.x, u.y, v.x, v.y);
-
             shm[tid] = cuCaddf(v, u);
             shm[tid_comb] = cuCsubf(u, v);
         }
@@ -87,6 +85,11 @@ __global__ void fft_kernel_global(cf *a, int len) {
     }
 }
 
+__global__ void fft_negate_y(cf *a, int len) {
+    int idx = blockDim.x * blockIdx.x + threadIdx.x;
+    a[idx].y *= -1;
+}
+
 
 void fft_cuda(cf* arr, int N) {
     cf *arr_cuda;
@@ -96,6 +99,7 @@ void fft_cuda(cf* arr, int N) {
     if (N <= BLOCK_SIZE) {
         index_swap_kernel<<<1, N>>>(arr_cuda, N);
         fft_kernel<<<1, N>>>(arr_cuda, N);
+        fft_negate_y<<<1, N>>>(arr_cuda, N);
     } else {
         index_swap_kernel<<<N / BLOCK_SIZE, BLOCK_SIZE>>>(arr_cuda, N);
         // N is power of 2, so a multiple of 1024
@@ -105,7 +109,9 @@ void fft_cuda(cf* arr, int N) {
         for (int len = BLOCK_SIZE * 2; len <= N; len <<= 1) {
             fft_kernel_global<<<N / BLOCK_SIZE, BLOCK_SIZE>>>(arr_cuda, len);
         }
+        fft_negate_y<<<N / BLOCK_SIZE, BLOCK_SIZE>>>(arr_cuda, N);
     }
+
 
     GPU_ERROR_CHECK(cudaDeviceSynchronize());
     GPU_ERROR_CHECK(cudaMemcpy(arr, arr_cuda, sizeof(cf) * N, cudaMemcpyDeviceToHost));
